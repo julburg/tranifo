@@ -6,7 +6,7 @@ import tornadofx.Stylesheet
 import tornadofx.c
 import tornadofx.px
 
-class HelloWorldApp : App(TranifoConfiguration::class, Styles::class)
+class TranifoApp : App(TranifoConfiguration::class, Styles::class)
 
 class Styles : Stylesheet() {
     init {
