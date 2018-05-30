@@ -1,58 +1,52 @@
 package de.ktl.tranifo
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.ktl.tranifo.kvvapi.Departure
 import de.ktl.tranifo.kvvapi.getDepartures
+import de.ktl.tranifo.metadata.TranifoMetadataApi
+import de.ktl.tranifo.metadata.TranifoMetadataService
 import de.ktl.tranifo.notification.AppleNotificationManager
-import spark.Spark.get
-import spark.Spark.post
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+
 
 data class StopIdPayload(val stopId: String)
 
 
 fun main(args: Array<String>) {
+    val tranifoMetadataService = TranifoMetadataService()
+    TranifoMetadataApi().initApi(tranifoMetadataService)
 
-    var stopId = "de:8212:507"
-
-    get("/stopId", { req, res ->
-        stopId
-    })
-
-    post("/stopId") { req, res ->
-        val body = req.body()
-        println(body)
-        res.status(201)
-        val creation = jacksonObjectMapper().readValue(body, StopIdPayload::class.java)
-        println(creation)
-        stopId=creation.stopId
-        "ok"
-    }
+//    var stopId = "de:8212:507"
 
     val hourFromWhichToNotify = 17
     val destination = "Rintheim"
 
     var nextTimeToAsk = 1
     while (true) {
-        println("StopId:" + stopId)
-        if (LocalTime.now().hour >= hourFromWhichToNotify) {
-            val departures = getDepartures(stopId)
-            val departuresForDirection = departures.filter { departure -> departure.destination.equals(destination) && departure.realtime }
-            val newestDeparture = departuresForDirection.get(0)
-            val messageLessingstrasse = newestDeparture.toString() + "\n" + departuresForDirection.get(1).toString()
+        val metadata = tranifoMetadataService.getMetadata()
+        if (metadata != null) {
 
-            val timeNextDeparture = parseTime(newestDeparture)!!
-            println(timeNextDeparture)
+            println("StopId:" + metadata.stopId)
+            if (LocalTime.now().hour >= hourFromWhichToNotify) {
+                val departures = getDepartures(metadata.stopId)
+                val departuresForDirection = departures.filter { departure -> departure.destination.equals(destination) && departure.realtime }
+                val newestDeparture = departuresForDirection.get(0)
+                val messageLessingstrasse = newestDeparture.toString() + "\n" + departuresForDirection.get(1).toString()
 
-            //the next time to ask should be when the actual tram arrives
-            nextTimeToAsk = Duration.between(LocalTime.now(), timeNextDeparture).toMinutes().toInt() + 1
+                val timeNextDeparture = parseTime(newestDeparture)!!
+                println(timeNextDeparture)
 
-            AppleNotificationManager().notify(messageLessingstrasse, "Bahn Allert")
+                //the next time to ask should be when the actual tram arrives
+                nextTimeToAsk = Duration.between(LocalTime.now(), timeNextDeparture).toMinutes().toInt() + 1
+
+                AppleNotificationManager().notify(messageLessingstrasse, "Bahn Allert")
+            }
+
+            println("Waiting for " + nextTimeToAsk + " minute(s)")
+        } else {
+            println("Please set the stop id")
         }
-
-        println("Waiting for " + nextTimeToAsk + " minute(s)")
         Thread.sleep(nextTimeToAsk.toLong() * 1000 * 60)
     }
 }
