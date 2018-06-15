@@ -1,7 +1,10 @@
 package de.ktl.tranifo.ui
 
-import javafx.beans.property.SimpleStringProperty
+import de.ktl.tranifo.kvvapi.Stop
+import de.ktl.tranifo.kvvapi.getStops
+import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Insets
+import javafx.scene.control.SelectionMode
 import tornadofx.*
 
 /**
@@ -10,38 +13,33 @@ import tornadofx.*
 class Center() : View() {
 
     override val root = vbox {
-        val stopid = khttp.get(
-                url = "http://localhost:4567/stopId")
-        val stopId = SimpleStringProperty()
+        val stops = getStops("49.0040079", "8.3849635")
+
+
+        val stop = SimpleObjectProperty<Stop>()
         fieldset("Stop Information") {
 
             vbox {
-                label("Stop id: " + stopid.text) {
-                    vboxConstraints { margin = Insets(5.0) }
-
+                val listview = listview<Stop> {
+                    items.addAll(stops)
+                    selectionModel.selectionMode = SelectionMode.SINGLE
                 }
-                hbox {
-                    label("Stop Id:") {
-                        hboxConstraints { margin = Insets(5.0) }
-
-                    }
-
-                    textfield {
-                        promptText = "Enter your stopId"
-                        textProperty().bindBidirectional(stopId)
-                        hboxConstraints { margin = Insets(5.0) }
-
+                listview.setOnMouseClicked {
+                    val selecteStop = listview.selectionModel.selectedItem;
+                    if (selecteStop != null) {
+                        stop.setValue(selecteStop)
                     }
                 }
 
             }
             button("Save") {
                 vboxConstraints { margin = Insets(5.0) }
-                disableProperty().bind(stopId.isNull.or(stopId.isEmpty))
+                disableProperty().bind(stop.isNull)
             }.setOnAction {
+                println("post for stop" + stop.get())
                 khttp.post(
                         url = "http://localhost:4567/stopId",
-                        json = mapOf("stopId" to stopId.get()))
+                        json = mapOf("stopId" to stop.get().id))
 
             }
 
