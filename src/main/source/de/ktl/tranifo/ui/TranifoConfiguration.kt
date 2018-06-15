@@ -1,27 +1,14 @@
 package de.ktl.tranifo.ui
 
-import javafx.beans.property.SimpleStringProperty
-import tornadofx.*
+import tornadofx.View
+import tornadofx.borderpane
 
 class TranifoConfiguration() : View() {
 
-    override val root = hbox {
-
-        val stopId = SimpleStringProperty()
-
-        label("Stop Id") {
-        }
-
-        textfield {
-            promptText = "Enter your stopId"
-            textProperty().bindBidirectional(stopId)
-        }
-
-        button("Save").setOnAction {
-            khttp.post(
-                    url = "http://localhost:4567/stopId",
-                    json = mapOf("stopId" to stopId.get()))
-        }
-
+    override val root =borderpane{
+        top(Header::class)
+        center(Center::class)
     }
+
+
 }
