@@ -1,7 +1,7 @@
 package de.ktl.tranifo.ui
 
-import de.ktl.tranifo.kvvapi.Stop
-import de.ktl.tranifo.kvvapi.getStops
+import de.ktl.tranifo.kvvliveapi.Stop
+import de.ktl.tranifo.kvvliveapi.getStops
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Insets
 import javafx.scene.control.SelectionMode

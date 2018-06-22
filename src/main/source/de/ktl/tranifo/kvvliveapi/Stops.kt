@@ -1,4 +1,4 @@
-package de.ktl.tranifo.kvvapi
+package de.ktl.tranifo.kvvliveapi
 
 import khttp.get
 import java.util.*

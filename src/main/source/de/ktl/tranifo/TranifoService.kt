@@ -1,7 +1,7 @@
 package de.ktl.tranifo
 
-import de.ktl.tranifo.kvvapi.Departure
-import de.ktl.tranifo.kvvapi.getDepartures
+import de.ktl.tranifo.kvvliveapi.Departure
+import de.ktl.tranifo.kvvliveapi.getDepartures
 import de.ktl.tranifo.metadata.TranifoMetadataApi
 import de.ktl.tranifo.metadata.TranifoMetadataService
 import de.ktl.tranifo.notification.AppleNotificationManager
@@ -17,7 +17,6 @@ fun main(args: Array<String>) {
     val tranifoMetadataService = TranifoMetadataService()
     TranifoMetadataApi().initApi(tranifoMetadataService)
 
-//    var stopId = "de:8212:507"
 
     val hourFromWhichToNotify = 17
     val destination = "Rintheim"
