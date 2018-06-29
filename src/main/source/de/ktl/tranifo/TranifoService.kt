@@ -1,7 +1,7 @@
 package de.ktl.tranifo
 
 import de.ktl.tranifo.kvvliveapi.Departure
-import de.ktl.tranifo.kvvliveapi.getDepartures
+import de.ktl.tranifo.kvvliveapi.departures
 import de.ktl.tranifo.metadata.TranifoMetadataApi
 import de.ktl.tranifo.metadata.TranifoMetadataService
 import de.ktl.tranifo.notification.AppleNotificationManager
@@ -10,7 +10,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
-data class StopIdPayload(val stopId: String)
+data class StopIdPayload(val stopId: String, val route: String, val destination: String)
 
 
 fun main(args: Array<String>) {
@@ -18,8 +18,7 @@ fun main(args: Array<String>) {
     TranifoMetadataApi().initApi(tranifoMetadataService)
 
 
-    val hourFromWhichToNotify = 17
-    val destination = "Rintheim"
+    val hourFromWhichToNotify = 12
 
     var nextTimeToAsk = 1
     while (true) {
@@ -28,8 +27,8 @@ fun main(args: Array<String>) {
 
             println("StopId:" + metadata.stopId)
             if (LocalTime.now().hour >= hourFromWhichToNotify) {
-                val departures = getDepartures(metadata.stopId)
-                val departuresForDirection = departures.filter { departure -> departure.destination.equals(destination) && departure.realtime }
+                val departures = departures(metadata.route, metadata.stopId)
+                val departuresForDirection = departures.filter { departure -> departure.destination.equals(metadata.destination) && departure.realtime }
                 val newestDeparture = departuresForDirection.get(0)
                 val messageLessingstrasse = newestDeparture.toString() + "\n" + departuresForDirection.get(1).toString()
 
