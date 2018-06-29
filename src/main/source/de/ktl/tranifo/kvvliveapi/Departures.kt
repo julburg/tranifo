@@ -7,10 +7,11 @@ import java.util.*
  * @author  Julia Burgard - burgard@synyx.de
  */
 
-public fun getDepartures(stopId: String): ArrayList<Departure> {
+fun getDepartures(route: String, stopId: String): ArrayList<Departure> {
 
-    val jsonObject = get("https://live.kvv.de/webapp/departures/bystop/$stopId" +
+  val jsonObject = get("https://live.kvv.de/webapp/departures/byroute/$route/$stopId" +
             "?maxInfos=10&key=$KEY").jsonObject
+
     val departures = jsonObject.getJSONArray("departures")
     println(jsonObject)
     var i = 0
@@ -25,7 +26,6 @@ public fun getDepartures(stopId: String): ArrayList<Departure> {
     }
     return departureObjects
 }
-
 
 data class Departure(val route: String, val destination: String, val time: String, val realtime: Boolean) {
 
