@@ -13,7 +13,7 @@ class TranifoMetadataApi {
 
     fun initApi(tranifoMetadataService: TranifoMetadataService) {
 
-        get("/stopId", { _, _ ->
+        get("/stopInformation", { _, _ ->
 
             val metadata = tranifoMetadataService.getMetadata()
             if (metadata == null) {
@@ -23,13 +23,13 @@ class TranifoMetadataApi {
             }
         })
 
-        post("/stopId") { req, res ->
+        post("/stopInformation") { req, res ->
             val body = req.body()
             println(body)
             res.status(201)
             val creation = jacksonObjectMapper().readValue(body, StopIdPayload::class.java)
             println(creation)
-            tranifoMetadataService.save(creation.stopId)
+            tranifoMetadataService.save(creation.stopId, creation.route, creation.destination)
             "ok"
         }
 

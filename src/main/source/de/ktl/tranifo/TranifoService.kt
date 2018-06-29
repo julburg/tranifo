@@ -10,7 +10,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
-data class StopIdPayload(val stopId: String)
+data class StopIdPayload(val stopId: String, val route: String, val destination: String)
 
 
 fun main(args: Array<String>) {

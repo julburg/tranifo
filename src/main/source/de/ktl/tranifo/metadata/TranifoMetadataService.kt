@@ -24,14 +24,14 @@ class TranifoMetadataService {
 
     }
 
-    fun save(stopId: String) {
+    fun save(stopId: String, route: String, destination: String) {
 
         val metadata = getMetadata()
         if (metadata == null) {
-            db.getRepository<TranifoMetadata> { insert(TranifoMetadata("Stop", stopId)) }
+            db.getRepository<TranifoMetadata> { insert(TranifoMetadata("Stop", stopId, route, destination)) }
         } else {
             val repository = db.getRepository<TranifoMetadata> {}
-            repository.update(TranifoMetadata::name eq "Stop", TranifoMetadata("Stop", stopId))
+            repository.update(TranifoMetadata::name eq "Stop", TranifoMetadata("Stop", stopId,route,destination))
         }
     }
 
@@ -48,4 +48,4 @@ class TranifoMetadataService {
 }
 
 
-data class TranifoMetadata(val name: String, val stopId: String)
+data class TranifoMetadata(val name: String, val stopId: String, val route: String, val destination: String)

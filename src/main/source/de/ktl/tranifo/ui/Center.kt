@@ -69,10 +69,10 @@ class Center() : View() {
                 vboxConstraints { margin = Insets(5.0) }
                 disableProperty().bind(destination.isNull)
             }.setOnAction {
-                println("post for stop" + stop.get())
+                println("post for stop" + stop.get() + " " + route.get() + " " + destination.get())
                 khttp.post(
-                        url = "http://localhost:4567/stopId",
-                        json = mapOf("stopId" to stop.get().id))
+                        url = "http://localhost:4567/stopInformation",
+                        json = mapOf("stopId" to stop.get().id, "route" to route.get().routeName, "destination" to destination.get()))
 
             }
 
