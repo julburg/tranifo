@@ -1,5 +1,6 @@
 package de.ktl.tranifo.ui
 
+import de.ktl.tranifo.kvvliveapi.Route
 import de.ktl.tranifo.kvvliveapi.Stop
 import de.ktl.tranifo.kvvliveapi.getStops
 import javafx.beans.property.SimpleObjectProperty
@@ -15,17 +16,29 @@ class Center() : View() {
     override val root = vbox {
         val stops = getStops("49.0040079", "8.3849635")
 
-
         val stop = SimpleObjectProperty<Stop>()
+        val route = SimpleObjectProperty<Route>()
+
         fieldset("Stop Information") {
 
             vbox {
-                val listview = listview<Stop> {
+                val listviewRoutes = listview<Route> {
+                    items.addAll(Route.values())
+                    selectionModel.selectionMode = SelectionMode.SINGLE
+                }
+                listviewRoutes.setOnMouseClicked {
+                    val selecteRoute = listviewRoutes.selectionModel.selectedItem;
+                    if (selecteRoute != null) {
+                        route.setValue(selecteRoute)
+                    }
+                }
+
+                val listviewStops = listview<Stop> {
                     items.addAll(stops)
                     selectionModel.selectionMode = SelectionMode.SINGLE
                 }
-                listview.setOnMouseClicked {
-                    val selecteStop = listview.selectionModel.selectedItem;
+                listviewStops.setOnMouseClicked {
+                    val selecteStop = listviewStops.selectionModel.selectedItem;
                     if (selecteStop != null) {
                         stop.setValue(selecteStop)
                     }
