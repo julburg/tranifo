@@ -2,8 +2,8 @@ package de.ktl.tranifo.ui
 
 import de.ktl.tranifo.kvvliveapi.Route
 import de.ktl.tranifo.kvvliveapi.Stop
-import de.ktl.tranifo.kvvliveapi.getDestinations
-import de.ktl.tranifo.kvvliveapi.getStops
+import de.ktl.tranifo.kvvliveapi.destinations
+import de.ktl.tranifo.kvvliveapi.stops
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Insets
 import javafx.scene.control.SelectionMode
@@ -15,7 +15,7 @@ import tornadofx.*
 class Center() : View() {
 
     override val root = vbox {
-        val stops = getStops("49.0040079", "8.3849635")
+        val stops = stops("49.0040079", "8.3849635")
 
         val stop = SimpleObjectProperty<Stop>()
         val route = SimpleObjectProperty<Route>()
@@ -83,7 +83,7 @@ class Center() : View() {
     private fun reloadDestinations(route: SimpleObjectProperty<Route>, stop: SimpleObjectProperty<Stop>,
                                    destinationsData: SortedFilteredList<String>, destination: SimpleObjectProperty<String>) {
         if (route.get() != null && stop.get() != null) {
-            val destinations = getDestinations(route.get().toString(), stop.get().id)
+            val destinations = destinations(route.get().toString(), stop.get().id)
             destinationsData.removeAll(destinationsData)
             destination.set(null)
             destinationsData.addAll(destinations)

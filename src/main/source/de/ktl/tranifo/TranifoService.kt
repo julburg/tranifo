@@ -1,7 +1,7 @@
 package de.ktl.tranifo
 
 import de.ktl.tranifo.kvvliveapi.Departure
-import de.ktl.tranifo.kvvliveapi.getDepartures
+import de.ktl.tranifo.kvvliveapi.departures
 import de.ktl.tranifo.metadata.TranifoMetadataApi
 import de.ktl.tranifo.metadata.TranifoMetadataService
 import de.ktl.tranifo.notification.AppleNotificationManager
@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
 
             println("StopId:" + metadata.stopId)
             if (LocalTime.now().hour >= hourFromWhichToNotify) {
-                val departures = getDepartures(metadata.route, metadata.stopId)
+                val departures = departures(metadata.route, metadata.stopId)
                 val departuresForDirection = departures.filter { departure -> departure.destination.equals(metadata.destination) && departure.realtime }
                 val newestDeparture = departuresForDirection.get(0)
                 val messageLessingstrasse = newestDeparture.toString() + "\n" + departuresForDirection.get(1).toString()
