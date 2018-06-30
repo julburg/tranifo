@@ -1,4 +1,4 @@
-# tranifo
+# Tranifo service
 
 
 Tranifo is a desktop application to notify users of the tram departure times.
