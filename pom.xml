@@ -55,12 +55,6 @@
             <artifactId>spark-kotlin</artifactId>
             <version>1.0.0-alpha</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/no.tornado/tornadofx -->
-        <dependency>
-            <groupId>no.tornado</groupId>
-            <artifactId>tornadofx</artifactId>
-            <version>1.7.16</version>
-        </dependency>
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
