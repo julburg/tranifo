@@ -34,7 +34,7 @@ fun stops(lat: String, lon: String): List<Stop> {
 data class Departure(val route: String, val destination: String, val time: String, val realtime: Boolean) {
 
     override fun toString(): String {
-        return route + " " + destination + ": " + time
+        return "$route $destination: $time"
     }
 }
 
