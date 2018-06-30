@@ -1,6 +1,7 @@
 package de.ktl.tranifo.metadata
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.ktl.tranifo.NotficationConfig
 import de.ktl.tranifo.StopIdPayload
 import spark.Spark.get
 import spark.Spark.post
@@ -15,7 +16,7 @@ class TranifoMetadataApi {
 
         get("/stopInformation", { _, _ ->
 
-            val metadata = tranifoMetadataService.getMetadata()
+            val metadata = tranifoMetadataService.getStopConfig()
             if (metadata == null) {
                 "Keine StopId gesetzt"
             } else {
@@ -30,6 +31,18 @@ class TranifoMetadataApi {
             val creation = jacksonObjectMapper().readValue(body, StopIdPayload::class.java)
             println(creation)
             tranifoMetadataService.save(creation.stopId, creation.route, creation.destination)
+            "ok"
+        }
+
+
+        post("/notification") { req, res ->
+            val body = req.body()
+            println(body)
+            res.status(201)
+            val creation = jacksonObjectMapper().readValue(body, NotficationConfig::class.java)
+            println(creation)
+            println("Received notificaction config ${creation.hour} and ${creation.interval}")
+            tranifoMetadataService.save(creation.hour, creation.interval)
             "ok"
         }
 

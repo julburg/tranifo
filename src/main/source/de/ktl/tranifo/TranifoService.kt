@@ -12,23 +12,23 @@ import java.time.format.DateTimeFormatter
 
 data class StopIdPayload(val stopId: String, val route: String, val destination: String)
 
+data class NotficationConfig(val hour: Int, val interval: Int)
 
 fun main(args: Array<String>) {
     val tranifoMetadataService = TranifoMetadataService()
     TranifoMetadataApi().initApi(tranifoMetadataService)
 
 
-    val hourFromWhichToNotify = 12
-
     var nextTimeToAsk = 1
     while (true) {
-        val metadata = tranifoMetadataService.getMetadata()
-        if (metadata != null) {
+        val stopConfig = tranifoMetadataService.getStopConfig()
+        val notificationConfig = tranifoMetadataService.getNotificationConfig();
+        if (stopConfig != null && notificationConfig != null) {
 
-            println("StopId:" + metadata.stopId)
-            if (LocalTime.now().hour >= hourFromWhichToNotify) {
-                val departures = departures(metadata.route, metadata.stopId)
-                val departuresForDirection = departures.filter { departure -> departure.destination.equals(metadata.destination) && departure.realtime }
+            println("StopId:" + stopConfig.stopId)
+            if (LocalTime.now().hour >= notificationConfig.hour) {
+                val departures = departures(stopConfig.route, stopConfig.stopId)
+                val departuresForDirection = departures.filter { departure -> departure.destination.equals(stopConfig.destination) && departure.realtime }
                 val newestDeparture = departuresForDirection.get(0)
                 val messageLessingstrasse = newestDeparture.toString() + "\n" + departuresForDirection.get(1).toString()
 
@@ -36,14 +36,14 @@ fun main(args: Array<String>) {
                 println(timeNextDeparture)
 
                 //the next time to ask should be when the actual tram arrives
-                nextTimeToAsk = Duration.between(LocalTime.now(), timeNextDeparture).toMinutes().toInt() + 1
+                nextTimeToAsk = Duration.between(LocalTime.now(), timeNextDeparture).toMinutes().toInt() + 1 + notificationConfig.intervalMinutes
 
                 AppleNotificationManager().notify(messageLessingstrasse, "Bahn Allert")
             }
 
-            println("Waiting for " + nextTimeToAsk + " minute(s)")
+            println("Waiting for $nextTimeToAsk minute(s)")
         } else {
-            println("Please set the stop id")
+            println("Please set the stop id and notification config")
         }
         Thread.sleep(nextTimeToAsk.toLong() * 1000 * 60)
     }

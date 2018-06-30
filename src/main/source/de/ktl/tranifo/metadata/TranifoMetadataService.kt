@@ -17,21 +17,38 @@ class TranifoMetadataService {
         this.db = getDb()
     }
 
-    fun getMetadata(): TranifoMetadata? {
-        val repository = db.getRepository<TranifoMetadata> {}
-        val find = repository.find(TranifoMetadata::name eq "Stop")
+    fun getStopConfig(): TranifoStopConfig? {
+        val repository = db.getRepository<TranifoStopConfig> {}
+        val find = repository.find(TranifoStopConfig::name eq "Stop")
+        return find.firstOrNull();
+
+    }
+
+    fun getNotificationConfig(): TranifoNotificationConfig? {
+        val repository = db.getRepository<TranifoNotificationConfig> {}
+        val find = repository.find(TranifoStopConfig::name eq "Notification")
         return find.firstOrNull();
 
     }
 
     fun save(stopId: String, route: String, destination: String) {
 
-        val metadata = getMetadata()
-        if (metadata == null) {
-            db.getRepository<TranifoMetadata> { insert(TranifoMetadata("Stop", stopId, route, destination)) }
+        val stopConfig = getStopConfig()
+        if (stopConfig == null) {
+            db.getRepository<TranifoStopConfig> { insert(TranifoStopConfig("Stop", stopId, route, destination)) }
         } else {
-            val repository = db.getRepository<TranifoMetadata> {}
-            repository.update(TranifoMetadata::name eq "Stop", TranifoMetadata("Stop", stopId,route,destination))
+            val repository = db.getRepository<TranifoStopConfig> {}
+            repository.update(TranifoStopConfig::name eq "Stop", TranifoStopConfig("Stop", stopId, route, destination))
+        }
+    }
+
+    fun save(hour: Int, intervalMinutes: Int) {
+        val notificationConfig = getNotificationConfig()
+        if (notificationConfig == null) {
+            db.getRepository<TranifoNotificationConfig> { insert(TranifoNotificationConfig("Notification", hour, intervalMinutes)) }
+        } else {
+            val repository = db.getRepository<TranifoNotificationConfig> {}
+            repository.update(TranifoStopConfig::name eq "Notification", TranifoNotificationConfig("Notification", hour, intervalMinutes))
         }
     }
 
@@ -48,4 +65,5 @@ class TranifoMetadataService {
 }
 
 
-data class TranifoMetadata(val name: String, val stopId: String, val route: String, val destination: String)
+data class TranifoStopConfig(val name: String, val stopId: String, val route: String, val destination: String)
+data class TranifoNotificationConfig(val name: String, val hour: Int, val intervalMinutes: Int)

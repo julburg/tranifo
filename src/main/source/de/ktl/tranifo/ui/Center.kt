@@ -5,6 +5,7 @@ import de.ktl.tranifo.kvvliveapi.Stop
 import de.ktl.tranifo.kvvliveapi.destinations
 import de.ktl.tranifo.kvvliveapi.stops
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Insets
 import javafx.scene.control.SelectionMode
 import tornadofx.*
@@ -16,7 +17,10 @@ class Center() : View() {
 
     override val root = vbox {
         val stops = stops("49.0040079", "8.3849635")
-
+        val hour = SimpleStringProperty();
+        hour.set("17")
+        val interval = SimpleStringProperty();
+        interval.set("10")
         val stop = SimpleObjectProperty<Stop>()
         val route = SimpleObjectProperty<Route>()
         val destination = SimpleObjectProperty<String>()
@@ -25,7 +29,37 @@ class Center() : View() {
         val destinationsProperties = SortedFilteredList<String>()
 
         fieldset("Stop Information") {
+            hbox {
+                label("Uhrzeit")
+                val hourField = textfield {
+                    filterInput { it.controlNewText.isHour() }
+                    bind(hour)
+                }
+                val context = ValidationContext()
+                context.addValidator(hourField, hourField.textProperty()) {
+                    if (it.isNullOrBlank()) error("The hour is required") else null
+                }
+            }
+            hbox {
+                label("Interval")
+                val intervalField = textfield {
+                    filterInput { it.controlNewText.isMinutes() }
+                    bind(interval)
+                }
+                val context = ValidationContext()
+                context.addValidator(intervalField, intervalField.textProperty()) {
+                    if (it.isNullOrBlank()) error("The interval is required") else null
+                }
+            }
+            button("Save") {
+                vboxConstraints { margin = Insets(5.0) }
+                disableProperty().bind(hour.isEmpty.or(interval.isEmpty))
+            }.setOnAction {
+                khttp.post(
+                        url = "http://localhost:4567/notification",
+                        json = mapOf("hour" to hour.get(), "interval" to interval.get()))
 
+            }
             hbox {
                 val routesView = listview<Route> {
                     items.addAll(Route.values())
@@ -91,3 +125,6 @@ class Center() : View() {
     }
 
 }
+
+fun String.isHour(): Boolean = this.isInt() && this.toInt() in 0..23
+fun String.isMinutes(): Boolean = this.isInt() && this.toInt() in 1..60
