@@ -4,10 +4,11 @@ import de.ktl.tranifo.kvvliveapi.Departure
 import de.ktl.tranifo.kvvliveapi.departures
 import de.ktl.tranifo.metadata.TranifoMetadataApi
 import de.ktl.tranifo.metadata.TranifoMetadataService
+import de.ktl.tranifo.metadata.TranifoNotificationConfig
+import de.ktl.tranifo.metadata.TranifoStopConfig
 import de.ktl.tranifo.notification.AppleNotificationManager
 import java.time.Duration
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 
 data class StopIdPayload(val stopId: String, val route: String, val destination: String)
@@ -19,53 +20,47 @@ fun main(args: Array<String>) {
     TranifoMetadataApi().initApi(tranifoMetadataService)
 
 
-    var nextTimeToAsk = 1
+    var wait = 1
     while (true) {
+
         val stopConfig = tranifoMetadataService.getStopConfig()
         val notificationConfig = tranifoMetadataService.getNotificationConfig();
+
         if (stopConfig != null && notificationConfig != null) {
 
             println("StopId:" + stopConfig.stopId)
             if (LocalTime.now().hour >= notificationConfig.hour) {
-                val departures = departures(stopConfig.route, stopConfig.stopId)
-                val departuresForDirection = departures.filter { departure -> departure.destination.equals(stopConfig.destination) && departure.realtime }
-                val newestDeparture = departuresForDirection.get(0)
-                val messageLessingstrasse = newestDeparture.toString() + "\n" + departuresForDirection.get(1).toString()
+                val departures = departures(stopConfig)
+                val message = buildMessage(departures)
 
-                val timeNextDeparture = parseTime(newestDeparture)!!
-                println(timeNextDeparture)
+                wait = calcurateWaitingTime(departures, wait, notificationConfig)
 
-                //the next time to ask should be when the actual tram arrives
-                nextTimeToAsk = Duration.between(LocalTime.now(), timeNextDeparture).toMinutes().toInt() + 1 + notificationConfig.intervalMinutes
-
-                AppleNotificationManager().notify(messageLessingstrasse, "Bahn Allert")
+                AppleNotificationManager().notify(message, "Bahn Allert")
             }
 
-            println("Waiting for $nextTimeToAsk minute(s)")
+            println("Waiting for $wait minute(s)")
         } else {
             println("Please set the stop id and notification config")
         }
-        Thread.sleep(nextTimeToAsk.toLong() * 1000 * 60)
+        Thread.sleep(wait.toLong() * 1000 * 60)
     }
 }
 
-private fun parseTime(newestDeparture: Departure): LocalTime? {
-    val regexOnlyMinutes = Regex("""(\d) min""")
-    val regexHoursAndMinutes = Regex("""\d{2}:\d{2}""")
-    val regexZeroMinutes = Regex("""^\d${'$'}""")
+private fun buildMessage(departures: List<Departure>) =
+        departures.get(0).toString() + "\n" + departures.get(1).toString()
 
-    if (regexHoursAndMinutes.containsMatchIn(newestDeparture.time)) {
+private fun departures(stopConfig: TranifoStopConfig): List<Departure> {
+    val departures = departures(stopConfig.route, stopConfig.stopId)
+    val departuresForDirection = departures.filter { departure -> departure.destination.equals(stopConfig.destination) && departure.realtime }
+    return departuresForDirection
+}
 
-        return LocalTime.parse(newestDeparture.time, DateTimeFormatter.ofPattern("HH:mm"))
-    }
-    if (regexOnlyMinutes.containsMatchIn(newestDeparture.time)) {
-        val (minutes: String) = regexOnlyMinutes.find(newestDeparture.time)!!.destructured
-        return LocalTime.now().plusMinutes(minutes.toLong())
-    }
-
-    if (regexZeroMinutes.containsMatchIn(newestDeparture.time)) {
-        return LocalTime.now()
-    }
-    throw IllegalStateException("time not parsable")
+private fun calcurateWaitingTime(departures: List<Departure>, nextTimeToAsk: Int, notificationConfig: TranifoNotificationConfig): Int {
+    var nextTimeToAsk1 = nextTimeToAsk
+    val timeNextDeparture = departures.get(0).parseTime()!!
+    //the next time to ask should be when the actual tram arrives
+    val durationToNextTram = Duration.between(LocalTime.now(), timeNextDeparture).toMinutes().toInt()
+    nextTimeToAsk1 = durationToNextTram + 1 + notificationConfig.intervalMinutes
+    return nextTimeToAsk1
 }
 

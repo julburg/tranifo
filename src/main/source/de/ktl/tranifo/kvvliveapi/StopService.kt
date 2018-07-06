@@ -3,6 +3,8 @@ package de.ktl.tranifo.kvvliveapi
 import khttp.get
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 /**
  * @author  Julia Burgard - burgard@synyx.de
@@ -36,7 +38,29 @@ data class Departure(val route: String, val destination: String, val time: Strin
     override fun toString(): String {
         return "$route $destination: $time"
     }
+
+    fun parseTime(): LocalTime? {
+
+        val regexOnlyMinutes = Regex("""(\d) min""")
+        val regexHoursAndMinutes = Regex("""\d{2}:\d{2}""")
+        val regexZeroMinutes = Regex("""^\d${'$'}""")
+
+        if (regexHoursAndMinutes.containsMatchIn(time)) {
+
+            return LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"))
+        }
+        if (regexOnlyMinutes.containsMatchIn(time)) {
+            val (minutes: String) = regexOnlyMinutes.find(time)!!.destructured
+            return LocalTime.now().plusMinutes(minutes.toLong())
+        }
+
+        if (regexZeroMinutes.containsMatchIn(time)) {
+            return LocalTime.now()
+        }
+        throw IllegalStateException("time not parsable")
+    }
 }
+
 
 data class Stop(val id: String, val name: String, val distance: Int) {
 
